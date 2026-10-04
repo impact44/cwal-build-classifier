@@ -33,6 +33,14 @@ jobs:
       - name: Test the identifier and every definition
         run: cargo test
 
+      # The corpus timelines take a few minutes to simulate; reuse them while
+      # the corpus and the extractor are unchanged (the build also checks a
+      # hash of the engine itself and resimulates on a mismatch).
+      - uses: actions/cache@v4
+        with:
+          path: target/corpus-timelines
+          key: corpus-timelines-${{ hashFiles('identifier/corpus/index.json', 'identifier/crate/src/**', 'identifier/wasm/src/**') }}
+
       - name: Build the identifier sandbox
         run: node identifier/build-site.mjs
 

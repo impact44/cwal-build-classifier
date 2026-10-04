@@ -305,3 +305,14 @@ fn explain_have_lists_excluded_candidates() {
     assert_eq!(r.candidates.len(), 3);
     assert_eq!(r.candidates[2].excluded_by.as_deref(), Some("after lair started"));
 }
+
+#[test]
+fn timelines_round_trip_through_json() {
+    let rep = ReplayBuild { map: "m".into(), frame_count: 10, players: vec![two_hatch_muta()] };
+    let back: ReplayBuild = serde_json::from_str(&serde_json::to_string(&rep).unwrap()).unwrap();
+    let a = &rep.players[0].events;
+    let b = &back.players[0].events;
+    assert_eq!(a.len(), b.len());
+    assert!(a.iter().zip(b).all(|(x, y)| x.slug == y.slug && x.seconds == y.seconds && x.constructed == y.constructed));
+    assert!(serde_json::from_str::<Event>(r#"{"slug":"nope","category":"building","frame":0,"seconds":0,"constructed":true,"supply":null}"#).is_err());
+}

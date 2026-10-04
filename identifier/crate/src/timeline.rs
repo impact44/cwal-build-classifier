@@ -3,15 +3,20 @@
 //! alike, so a definition matches the same way in both places.
 
 use crate::slugs::Category;
-use serde::Serialize;
+use serde::{Deserialize, Deserializer, Serialize};
 
 /// Milliseconds per frame on Fastest, so timings agree with the durations
 /// shown elsewhere on cwal.gg.
 pub const MS_PER_FRAME: f64 = 42.0;
 
-#[derive(Clone, Debug, Serialize)]
+/// Spelled as an alias so serde's derive doesn't read the `'static` as a
+/// borrow from the input (`known_slug` maps it to the static string instead).
+pub type Slug = &'static str;
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Event {
-    pub slug: &'static str,
+    #[serde(deserialize_with = "known_slug")]
+    pub slug: Slug,
     /// Buildings always take part in an `order`; units only when the pattern
     /// names them, so a stream of marines can't break a strict building order.
     pub category: Category,
@@ -45,7 +50,7 @@ impl Event {
     }
 }
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PlayerBuild {
     pub player_id: u8,
     pub name: String,
@@ -53,7 +58,10 @@ pub struct PlayerBuild {
     pub events: Vec<Event>,
 }
 
-#[derive(Clone, Debug, Serialize)]
+/// A timeline as serialized (the sandbox's precomputed corpus timelines) reads
+/// back into the same shape, so matching a stored timeline is identical to
+/// matching a fresh extraction.
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ReplayBuild {
     pub map: String,
     pub frame_count: u32,
@@ -75,4 +83,11 @@ impl ReplayBuild {
             _ => None,
         }
     }
+}
+
+/// Map a serialized slug back to the static one, rejecting names the extractor
+/// could never have produced.
+fn known_slug<'de, D: Deserializer<'de>>(d: D) -> Result<&'static str, D::Error> {
+    let s = String::deserialize(d)?;
+    crate::slugs::intern(&s).ok_or_else(|| serde::de::Error::custom(format!("unknown slug {s:?}")))
 }

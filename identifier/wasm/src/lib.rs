@@ -222,3 +222,87 @@ pub unsafe extern "C" fn identify(build: *const ReplayBuild, defs: *const u8, de
 pub extern "C" fn slugs() -> usize {
     set_out_json(&build_identifier::slugs::all())
 }
+
+// ---- corpus: precomputed timelines, matched without simulating -------------
+
+thread_local! {
+    static CORPUS: RefCell<Vec<Option<ReplayBuild>>> = const { RefCell::new(Vec::new()) };
+}
+
+/// Load the corpus timelines: a JSON array, one `ReplayBuild` (or null for a
+/// replay that failed to simulate) per index entry, in index order. Returns how
+/// many loaded, or -1 with the error in the output buffer.
+///
+/// # Safety
+/// Buffer from [`alloc`].
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn corpus_load(ptr: *const u8, len: usize) -> i32 {
+    match serde_json::from_slice::<Vec<Option<ReplayBuild>>>(unsafe { bytes(ptr, len) }) {
+        Ok(v) => {
+            let n = v.len() as i32;
+            CORPUS.with(|c| *c.borrow_mut() = v);
+            n
+        }
+        Err(e) => {
+            set_out_json(&serde_json::json!({ "error": e.to_string() }));
+            -1
+        }
+    }
+}
+
+#[derive(Serialize)]
+struct Hit<'a> {
+    idx: usize,
+    players: Vec<HitPlayer<'a>>,
+}
+
+#[derive(Serialize)]
+struct HitPlayer<'a> {
+    player_id: u8,
+    name: &'a str,
+    race: char,
+    opponent: Option<char>,
+}
+
+/// Match corpus entries `start..end` against the first definition in the JSON
+/// `[{file, text}]` array, leaving `{hits: [{idx, players}]}` (only players it
+/// labels) or `{error}` in the output buffer. Called in chunks so the page can
+/// show progress and stop between them.
+///
+/// # Safety
+/// Buffer from [`alloc`].
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn corpus_scan(defs: *const u8, defs_len: usize, start: usize, end: usize) -> usize {
+    let def = serde_json::from_slice::<Vec<DefFile>>(unsafe { bytes(defs, defs_len) })
+        .map_err(|e| e.to_string())
+        .and_then(|f| f.into_iter().next().ok_or_else(|| "no definition".to_string()))
+        .and_then(|f| BuildDef::parse(&f.text).map_err(|e| e.to_string()));
+    let def = match def {
+        Ok(d) => d,
+        Err(e) => return set_out_json(&serde_json::json!({ "error": e })),
+    };
+    CORPUS.with(|c| {
+        let corpus = c.borrow();
+        let end = end.min(corpus.len());
+        let hits: Vec<Hit> = (start.min(end)..end)
+            .filter_map(|idx| {
+                let rep = corpus[idx].as_ref()?;
+                let players: Vec<HitPlayer> = rep
+                    .players
+                    .iter()
+                    .filter_map(|p| {
+                        let opponent = rep.opponent_race(p.player_id);
+                        build_identifier::matches(&def, p, opponent).then_some(HitPlayer {
+                            player_id: p.player_id,
+                            name: &p.name,
+                            race: p.race,
+                            opponent,
+                        })
+                    })
+                    .collect();
+                (!players.is_empty()).then_some(Hit { idx, players })
+            })
+            .collect();
+        set_out_json(&serde_json::json!({ "hits": hits }))
+    })
+}

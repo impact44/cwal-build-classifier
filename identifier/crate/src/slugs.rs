@@ -2,7 +2,7 @@
 //! analysis maps and sciffer's units.dat. Ids we don't model return None and
 //! are simply ignored.
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, serde::Serialize)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Category {
     Building,
@@ -161,6 +161,13 @@ pub fn all() -> Vec<&'static str> {
     v.sort_unstable();
     v.dedup();
     v
+}
+
+/// The static slug equal to `slug`, if it is one.
+pub fn intern(slug: &str) -> Option<&'static str> {
+    static ALL: std::sync::OnceLock<Vec<&'static str>> = std::sync::OnceLock::new();
+    let all = ALL.get_or_init(all);
+    all.binary_search(&slug).ok().map(|i| all[i])
 }
 
 pub fn is_known(slug: &str) -> bool {

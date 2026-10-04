@@ -67,4 +67,7 @@ for (const f of ['bwsim_wasm.wasm', 'sim.pack.gz']) {
 	if (!res.ok) throw new Error(`${f}: HTTP ${res.status}`);
 	writeFileSync(join(engine, f), Buffer.from(await res.arrayBuffer()));
 }
+// Last, since it runs the engine fetched above.
+const { buildTimelines } = await import('./corpus/timelines.mjs');
+await buildTimelines();
 console.log('done: serve site/ and open /identifier/');

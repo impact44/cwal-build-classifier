@@ -1,12 +1,16 @@
 // Corpus search: run the focused definition over every replay in the corpus
 // (identifier/corpus) and list the players it labels.
 //
-// Each replay's first 8 minutes are simulated once, spread over a pool of
-// workers. Workers keep the timelines, and replay i always goes to worker
-// i % N, so searching again after an edit only re-matches. Replays the
-// definition can't apply to (no player of its race, wrong matchup) are skipped
+// Normally the site build has already simulated the corpus
+// (corpus/timelines.json), so a search only matches: corpus-worker.js runs the
+// identifier over the stored timelines in chunks, for progress and Cancel.
+//
+// Without that file (a local build that skipped it) it falls back to
+// simulating: each replay's first 8 minutes, spread over a pool of workers
+// that keep the timelines (replay i always goes to worker i % N), so searching
+// again only re-matches. Replays the definition can't apply to are skipped
 // from the index without simulating. Cancel stops handing out work; the few
-// replays already in flight finish and still count.
+// replays in flight finish and still count.
 
 const RACE = { Z: 'Zerg', T: 'Terran', P: 'Protoss' };
 const SHOW = 50;
@@ -30,8 +34,13 @@ const fmtDur = (frames) => mmss((frames * 42) / 1000);
  */
 export const mountScan = (root, io) => {
 	let index = null; // [{file, map, frames, players: [{name, race}]}]
+	let fast = false; // precomputed timelines available
 	let workers = [];
+	let corpusWorker = null;
+	let corpusReady = false;
+	let seq = 0;
 	let run = null; // the current or last search
+	const CHUNK = 50;
 
 	const poolSize = () => Math.max(1, Math.min(6, (navigator.hardwareConcurrency || 4) - 1));
 	const url = (file) => `./corpus/replays/${file}`;
@@ -95,9 +104,66 @@ export const mountScan = (root, io) => {
 		scheduleRender();
 	};
 
+	const ensureCorpusWorker = () => {
+		if (corpusWorker) return;
+		corpusWorker = new Worker('./corpus-worker.js');
+		corpusWorker.onmessage = (e) => {
+			const m = e.data;
+			if (m.type === 'ready') {
+				corpusReady = true;
+				return scheduleRender();
+			}
+			if (!run || m.seq !== run.seq) return;
+			if (m.type === 'error') {
+				run.error = m.message;
+				run.finished = performance.now();
+			} else if (m.type === 'chunk') {
+				run.done = m.end;
+				run.matches.push(...m.hits);
+				if (m.end >= run.total || run.cancelled) run.finished = performance.now();
+				else nextChunk();
+			}
+			scheduleRender();
+		};
+	};
+
+	const nextChunk = () =>
+		corpusWorker.postMessage({
+			type: 'scan',
+			seq: run.seq,
+			defs: [{ file: run.def.file, text: run.def.text }],
+			start: run.done,
+			end: Math.min(run.done + CHUNK, run.total)
+		});
+
+	const startFast = (def) => {
+		ensureCorpusWorker();
+		run = {
+			fast: true,
+			seq: ++seq,
+			def,
+			text: def.text,
+			total: index.length,
+			skipped: 0,
+			done: 0,
+			simulated: 0,
+			failed: 0,
+			inFlight: 0,
+			matches: [],
+			started: performance.now(),
+			finished: null,
+			cancelled: false,
+			shown: SHOW,
+			queues: []
+		};
+		nextChunk();
+		render();
+	};
+
 	const start = () => {
 		const def = parseFocus();
 		if (def.error) return render();
+		if (fast) return startFast(def);
 		ensureWorkers();
 		const ids = [];
 		let skipped = 0;
@@ -132,7 +198,7 @@ export const mountScan = (root, io) => {
 		if (!run) return;
 		run.cancelled = true;
 		for (const q of run.queues) q.length = 0;
-		if (run.inFlight === 0) run.finished = performance.now();
+		if (run.fast || run.inFlight === 0) run.finished = performance.now();
 		render();
 	};
 
@@ -185,7 +251,9 @@ export const mountScan = (root, io) => {
 					{ class: 'help' },
 					def.error
 						? def.error
-						: `Finds every player ${def.id ? `"${def.id}"` : 'this definition'} labels. Each game's first 8 minutes are simulated once; searching again after an edit is instant for games already simulated.`
+						: fast
+							? `Finds every player ${def.id ? `"${def.id}"` : 'this definition'} labels in ${index.length.toLocaleString()} ladder games (1v1, 5+ minutes). The games are simulated ahead of time, so this only matches.`
+							: `Finds every player ${def.id ? `"${def.id}"` : 'this definition'} labels. Each game's first 8 minutes are simulated once; searching again after an edit is instant for games already simulated.`
 				)
 			),
 			running
@@ -204,10 +272,17 @@ export const mountScan = (root, io) => {
 				el(
 					'div',
 					{ class: 'scan-stats' },
-					el('span', {}, el('b', {}, run.done.toLocaleString()), ` of ${run.total.toLocaleString()} replays checked`),
+					run.fast && !corpusReady && !run.error
+						? el('span', {}, 'Loading the corpus timelines (about 1MB)…')
+						: el('span', {}, el('b', {}, run.done.toLocaleString()), ` of ${run.total.toLocaleString()} replays checked`),
 					el('span', { class: 'scan-matches' }, el('b', {}, run.matches.length.toLocaleString()), ` matching ${run.matches.length === 1 ? 'game' : 'games'}`),
-					running && run.done > 3 && el('span', {}, `about ${mmss(left)} left`),
-					!running && el('span', {}, `${run.cancelled ? 'cancelled' : 'done'} in ${mmss(elapsed)}`),
+					running && !run.fast && run.done > 3 && el('span', {}, `about ${mmss(left)} left`),
+					!running &&
+						el(
+							'span',
+							{},
+							`${run.cancelled ? 'cancelled' : 'done'} in ${elapsed < 60 ? `${elapsed.toFixed(elapsed < 10 ? 1 : 0)}s` : mmss(elapsed)}`
+						),
 					run.skipped > 0 &&
 						el(
 							'span',
@@ -239,6 +314,7 @@ export const mountScan = (root, io) => {
 			const res = await fetch('./corpus/index.json');
 			if (!res.ok) throw new Error(String(res.status));
 			index = await res.json();
+			fast = (await fetch('./corpus/timelines.json', { method: 'HEAD' })).ok;
 			render();
 		} catch {
 			root.replaceChildren(el('div', { class: 'help' }, 'The replay corpus is not available in this build.'));

@@ -24,10 +24,9 @@ definition for unknown fields, unknown names and malformed times.
 
 **Search the corpus** runs your definition over the 1,000 replays in
 `identifier/corpus/` and lists every player it labels, so you can check for
-false positives across real games before opening a pull request. Each game is
-simulated once (a few minutes for the whole corpus, spread over several
-workers); searching again after an edit only re-matches. Replays with no
-player your definition could apply to are skipped without simulating.
+false positives across real games before opening a pull request. The site
+build simulates the corpus ahead of time (`identifier/corpus/timelines.mjs`),
+so a search only matches and takes well under a second.
 
 To add replays to the corpus, put them in `identifier/corpus/replays/` and
 rebuild the index with `node identifier/corpus/index.mjs` (after
