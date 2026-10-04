@@ -3,6 +3,7 @@
 // definitions and renders the reports those produce.
 
 import { mountBuilder } from './builder.js';
+import { mountScan } from './scan.js';
 
 const STORE = 'cwal-identifier-defs-v1';
 const TAB_STORE = 'cwal-identifier-tab';
@@ -79,6 +80,7 @@ const setText = (t) => {
 	syncRevert();
 	save();
 	requestIdentify();
+	scan?.render();
 };
 
 // Of the loaded players this definition's race applies to, how many satisfy
@@ -127,7 +129,7 @@ $('#tab-form').addEventListener('click', () => showTab('form'));
 $('#tab-json').addEventListener('click', () => showTab('json'));
 
 // ---- worker ----------------------------------------------------------------
-const worker = new Worker('./worker.js');
+const worker = new Worker('./worker.js', { type: 'module' });
 let identifyTimer = 0;
 const requestIdentify = () => {
 	clearTimeout(identifyTimer);
@@ -235,6 +237,7 @@ const select = (i) => {
 	renderDefList();
 	renderDefStatus();
 	renderReplays();
+	scan?.render();
 };
 
 const uniqueFile = (base) => {
@@ -248,6 +251,7 @@ $('#editor').addEventListener('input', (e) => {
 	syncRevert();
 	save();
 	requestIdentify();
+	scan.render();
 });
 $('#editor').addEventListener('keydown', (e) => {
 	if (e.key !== 'Tab' || e.shiftKey) return;
@@ -285,17 +289,30 @@ $('#copy-def').addEventListener('click', async (e) => {
 $('#only-race').addEventListener('change', () => renderReplays());
 
 // ---- replays -----------------------------------------------------------------
+const addReplay = (name, bytes) => {
+	const id = nextId++;
+	replays.set(id, { name, pct: 0 });
+	worker.postMessage({ type: 'sim', id, bytes }, [bytes]);
+	return id;
+};
 const addFiles = async (files) => {
 	for (const f of files) {
 		if (!/\.rep$/i.test(f.name)) continue;
-		const id = nextId++;
-		replays.set(id, { name: f.name, pct: 0 });
-		const bytes = await f.arrayBuffer();
-		worker.postMessage({ type: 'sim', id, bytes }, [bytes]);
+		addReplay(f.name, await f.arrayBuffer());
 	}
 	if (!$('#engine-status').textContent) $('#engine-status').textContent = 'Loading the simulation engine (about 9MB, once)…';
 	renderReplays();
 };
+
+const scan = mountScan($('#scan'), {
+	focus: () => defs[current] ?? null,
+	inspect: async (url, name) => {
+		const res = await fetch(url);
+		const id = addReplay(name, await res.arrayBuffer());
+		renderReplays();
+		document.querySelector(`[data-replay="${id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+});
 const drop = $('#drop');
 $('#file').addEventListener('change', (e) => addFiles(e.target.files));
 drop.addEventListener('dragover', (e) => {

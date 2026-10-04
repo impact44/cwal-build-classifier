@@ -9,7 +9,7 @@
 //
 //   node identifier/build-site.mjs        then serve site/ (e.g. npx serve site)
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -42,6 +42,21 @@ const defs = readdirSync(defsDir)
 	.map((file) => ({ file, text: readFileSync(join(defsDir, file), 'utf8') }));
 writeFileSync(join(out, 'defs.json'), JSON.stringify(defs));
 console.log(`wrote ${defs.length} definitions`);
+
+// The replay corpus, served next to the page. The index must cover exactly
+// the replays present, or searches would skip or 404 on some.
+const corpus = join(root, 'identifier', 'corpus');
+const indexed = JSON.parse(readFileSync(join(corpus, 'index.json'), 'utf8')).map((e) => e.file);
+const present = readdirSync(join(corpus, 'replays')).filter((f) => f.endsWith('.rep'));
+const missing = present.filter((f) => !indexed.includes(f));
+const stale = indexed.filter((f) => !present.includes(f));
+if (missing.length || stale.length)
+	throw new Error(
+		`identifier/corpus/index.json is out of date (${missing.length} unindexed, ${stale.length} missing); run node identifier/corpus/index.mjs`
+	);
+cpSync(join(corpus, 'replays'), join(out, 'corpus', 'replays'), { recursive: true });
+copyFileSync(join(corpus, 'index.json'), join(out, 'corpus', 'index.json'));
+console.log(`copied ${present.length} corpus replays`);
 
 const engine = join(out, 'engine');
 mkdirSync(engine, { recursive: true });

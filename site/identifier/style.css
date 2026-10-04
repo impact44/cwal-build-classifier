@@ -205,3 +205,21 @@ button.add { align-self: flex-start; color: var(--accent); border-style: dashed;
 .builder .msg { padding: 8px; border-radius: 6px; }
 
 [hidden] { display: none !important; }
+
+/* ---- corpus search ---- */
+.scan { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
+.scan-head { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.scan-head .help { margin-top: 2px; max-width: 52ch; }
+button.primary { background: var(--accent); color: var(--panel); border-color: var(--accent); font-weight: 600; padding: 6px 16px; flex: none; }
+button.primary:disabled { opacity: 0.4; }
+button.danger-solid { background: var(--bad); color: var(--panel); border-color: var(--bad); font-weight: 600; padding: 6px 16px; flex: none; }
+.bar.big { height: 8px; border-radius: 4px; margin: 0; }
+.bar > i { transition: width 0.2s; }
+.scan-stats { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; align-items: baseline; }
+.scan-matches b { color: var(--ok); }
+.hits { list-style: none; margin: 0; padding: 0 4px 0 0; border-top: 1px solid var(--line); max-height: 420px; overflow-y: auto; }
+.hit-row { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.hit-main { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; min-width: 0; }
+.hit-player { font-weight: 600; overflow-wrap: anywhere; }
+.hit-meta { font-size: 12px; color: var(--muted); }
+.sub-title { font-size: 13px; margin: 0 0 8px; }

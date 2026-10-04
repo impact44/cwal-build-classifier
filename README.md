@@ -9,6 +9,7 @@ the site with its next deploy.
 | [`identifier/defs/`](identifier/defs/) | **Build definitions**: the JSON rules that label a player's build from a replay ("12 hatch", "3 hatch spire"). Start with its [README](identifier/defs/README.md). |
 | [`identifier/crate/`](identifier/crate/) | The Rust matcher and extractor that evaluate those definitions. cwal.gg's backend uses this crate directly. |
 | [`identifier/wasm/`](identifier/wasm/) | The same crate compiled for the browser sandbox. |
+| [`identifier/corpus/`](identifier/corpus/) | 1,000 ladder replays (1v1, 5+ minutes) the sandbox can search with a definition, and their index. |
 | [`guides/`](guides/) | **Build-order guides**: the articles and the components that render them. |
 | [`site/`](site/) | The GitHub Pages site: the [identifier sandbox](https://dxrsz.github.io/cwal-guides/identifier/) and the [guide previews](https://dxrsz.github.io/cwal-guides/guides/). |
 
@@ -20,6 +21,17 @@ it shows for every player which conditions matched and which didn't. When it
 labels the games you expect (and none you don't), copy the JSON into
 `identifier/defs/` and open a pull request. `cargo test` checks every
 definition for unknown fields, unknown names and malformed times.
+
+**Search the corpus** runs your definition over the 1,000 replays in
+`identifier/corpus/` and lists every player it labels, so you can check for
+false positives across real games before opening a pull request. Each game is
+simulated once (a few minutes for the whole corpus, spread over several
+workers); searching again after an edit only re-matches. Replays with no
+player your definition could apply to are skipped without simulating.
+
+To add replays to the corpus, put them in `identifier/corpus/replays/` and
+rebuild the index with `node identifier/corpus/index.mjs` (after
+`node identifier/build-site.mjs`, which it uses for the engine).
 
 To run the sandbox locally (needs Rust with the `wasm32-unknown-unknown`
 target, and Node):
