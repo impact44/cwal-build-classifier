@@ -1,0 +1,13 @@
+{
+  "id": "2.5hatch-spire",
+  "name": "2.5 Hatch Spire",
+  "aka": ["2.5 hatch muta", "2.5 hatch mutalisk", "two and a half hatch muta"],
+  "race": "Z",
+  "vs": [],
+  "notes": "Two-base spire with a third (macro) hatchery added AFTER the Lair and before the Spire: start Lair, then macro hatchery, then Spire. Two hatcheries when the Lair starts, three by the time the Spire starts. Structure only, opening-agnostic.",
+  "when": [
+    { "order": ["lair", "hatchery", "spire"] },
+    { "have": { "what": "hatchery", "op": "eq", "count": 2, "by_start_of": "lair" } },
+    { "have": { "what": "hatchery", "op": "eq", "count": 3, "by_start_of": "spire" } }
+  ]
+}

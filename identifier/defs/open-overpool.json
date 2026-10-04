@@ -1,0 +1,40 @@
+{
+  "id": "overpool",
+  "name": "Overpool",
+  "aka": [
+    "9 overpool",
+    "9 overlord 9 pool",
+    "over pool"
+  ],
+  "race": "Z",
+  "vs": [],
+  "notes": "Pool-first opening at around 9 supply, but an overlord is started BEFORE the pool (the 9-overlord-9-pool build). Between 9 pool and 12 pool economically. (Opening dimension, supply-based; sim only.)",
+  "when": [
+    {
+      "order": [
+        "hatchery",
+        "spawning_pool"
+      ],
+      "strict": true,
+      "include_start": true,
+      "ignore_supply_providers": true
+    },
+    {
+      "have": {
+        "what": "spawning_pool",
+        "op": "gte",
+        "count": 1,
+        "supply_min": 6,
+        "supply_max": 10
+      }
+    },
+    {
+      "have": {
+        "what": "overlord",
+        "op": "gte",
+        "count": 1,
+        "by_start_of": "spawning_pool"
+      }
+    }
+  ]
+}

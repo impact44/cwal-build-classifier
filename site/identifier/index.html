@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Build Identifier Sandbox</title>
+	<meta name="description" content="Write a cwal.gg build-order definition, drop in replays, and see exactly which conditions matched." />
+	<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+	<header class="top">
+		<div>
+			<h1>Build identifier sandbox</h1>
+			<p class="lede">
+				Edit a build definition, drop in StarCraft: Remastered replays, and see which players it labels and
+				why. This runs the same simulation and matcher as <a href="https://cwal.gg">cwal.gg</a>, in your
+				browser; nothing is uploaded.
+				<a href="https://github.com/dxrsz/cwal-guides/blob/main/identifier/defs/README.md">How definitions work</a>.
+			</p>
+		</div>
+	</header>
+
+	<main class="layout">
+		<section class="panel defs" aria-label="Definitions">
+			<div class="panel-head">
+				<h2>Definitions</h2>
+				<div class="row">
+					<button id="new-def" type="button">New</button>
+					<button id="reset-defs" type="button" class="quiet" title="Discard all local edits">Reset all</button>
+				</div>
+			</div>
+			<ul id="def-list" class="def-list"></ul>
+		</section>
+
+		<section class="panel editor" aria-label="Editor">
+			<div class="panel-head">
+				<h2 id="editor-title">Definition</h2>
+				<div class="row">
+					<button id="copy-def" type="button">Copy JSON</button>
+					<button id="revert-def" type="button" class="quiet">Revert</button>
+					<button id="delete-def" type="button" class="quiet danger">Delete</button>
+				</div>
+			</div>
+			<textarea id="editor" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+			<div id="def-status" class="def-status" aria-live="polite"></div>
+		</section>
+
+		<section class="panel results" aria-label="Replays">
+			<div class="panel-head">
+				<h2>Replays</h2>
+				<label class="row toggle"><input type="checkbox" id="only-race" checked /> Only players of this race</label>
+			</div>
+			<label id="drop" class="drop">
+				<input id="file" type="file" accept=".rep" multiple hidden />
+				<strong>Drop .rep files here</strong> or click to choose. The first 8 minutes are simulated once;
+				editing the definition re-matches instantly.
+			</label>
+			<div id="engine-status" class="engine-status"></div>
+			<div id="replays"></div>
+		</section>
+	</main>
+
+	<script type="module" src="app.js"></script>
+</body>
+</html>

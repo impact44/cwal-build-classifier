@@ -1,0 +1,11 @@
+{
+  "id": "3hatch-hydra",
+  "name": "3 Hatch Hydra",
+  "aka": ["973", "3 hatch hydralisk", "3h hydra"],
+  "race": "Z",
+  "vs": ["P"],
+  "notes": "Exactly three hatcheries (starting hatch plus two) before the Hydralisk Den. The classic 3-hatch hydra (a.k.a. 973) in ZvP. Structure only, opening-agnostic.",
+  "when": [
+    { "have": { "what": "hatchery", "op": "eq", "count": 3, "by_start_of": "hydralisk_den" } }
+  ]
+}

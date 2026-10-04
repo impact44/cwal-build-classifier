@@ -1,0 +1,11 @@
+{
+  "id": "9hatch",
+  "name": "9 Hatch",
+  "aka": ["nine hatch"],
+  "race": "Z",
+  "vs": [],
+  "notes": "Hatch-first (overhatch) opening: the natural hatchery goes down before the pool, at 9 supply. The greediest of the hatch-first openers, expanding while still supply capped. (Opening dimension, supply-based; sim only.)",
+  "when": [
+    { "have": { "what": "hatchery", "op": "gte", "count": 1, "supply_min": 8, "supply_max": 9, "by_start_of": "spawning_pool", "constructed_only": true } }
+  ]
+}

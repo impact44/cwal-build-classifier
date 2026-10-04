@@ -1,0 +1,30 @@
+{
+  "id": "12pool",
+  "name": "12 Pool",
+  "aka": [
+    "twelve pool"
+  ],
+  "race": "Z",
+  "vs": [],
+  "notes": "Pool-first (overpool family) opening: the Spawning Pool is the very first building, at 11-12 supply. More economic than 9 pool. (Opening dimension, supply-based; sim only.)",
+  "when": [
+    {
+      "order": [
+        "hatchery",
+        "spawning_pool"
+      ],
+      "strict": true,
+      "include_start": true,
+      "ignore_supply_providers": true
+    },
+    {
+      "have": {
+        "what": "spawning_pool",
+        "op": "gte",
+        "count": 1,
+        "supply_min": 11,
+        "supply_max": 13
+      }
+    }
+  ]
+}

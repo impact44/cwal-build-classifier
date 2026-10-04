@@ -1,0 +1,72 @@
+// ============================================================================
+// EXAMPLE build definition — a reference that exercises EVERY schema feature.
+//
+// This is NOT a real build and is NOT loaded by the matcher (it lives as
+// .jsonc, and only .json files in this folder are read). It exists purely so
+// you can see every field in one place. Real defs are much smaller — usually
+// one or two conditions. JSON has no comments; a real .json file must not
+// contain these `//` lines. See README.md for the full explanation.
+// ============================================================================
+{
+  // ── Identity ──────────────────────────────────────────────────────────────
+  "id": "example-kitchen-sink",          // unique kebab-case slug; THIS is the label applied to a matching player
+  "name": "Kitchen Sink Example",        // human-readable display name
+  "aka": ["demo", "every feature"],      // optional search aliases
+
+  // ── Scope: which players this can apply to ───────────────────────────────
+  "race": "Z",                           // only Zerg players are ever tested against this def
+  "vs": ["T", "P"],                      // only in ZvT / ZvP. Use [] for "any matchup". (Only checked on clean 1v1s.)
+
+  "notes": "Not a real build — a reference showing all features at once.",
+
+  // ── when: the list of CONDITIONS. ALL of them must hold (logical AND). ───
+  "when": [
+
+    // (1) LOOSE order (the default) — a SUBSEQUENCE. The listed buildings must
+    //     appear in this relative order, but anything NOT listed may appear in
+    //     between and is ignored. This step also shows all three step kinds:
+    {
+      "order": [
+        { "unordered": ["hatchery", "spawning_pool", "extractor"] }, // all three, in ANY order among themselves, before the next step
+        "lair",                                                      // a single named building
+        { "one_of": ["spire", "hydralisk_den"] }                    // ANY ONE of these satisfies the step
+      ]
+    },
+
+    // (2) STRICT order + include_start + ignore_supply_providers — all three order knobs.
+    //     "strict": true      = the steps must be the EXACT buildings in a row,
+    //                           nothing between them.
+    //     "include_start": true = fold in the free starting hatchery as the
+    //                           first element, so counting includes the main.
+    //     "ignore_supply_providers": true = drop Supply Depots / Pylons / Overlords first,
+    //                           so an overlord made before the pool doesn't break
+    //                           the "nothing between" rule.
+    //     Net meaning: the very first building the player makes (ignoring
+    //     overlords) is the Spawning Pool — a pool-first opener.
+    {
+      "order": ["hatchery", "spawning_pool"],
+      "strict": true,
+      "include_start": true,
+      "ignore_supply_providers": true
+    },
+
+    // (3) have + by_start_of + op "eq": count hatcheries that exist by the
+    //     moment the first spire STARTS. The free starting hatchery counts as
+    //     one, so eq 3 means main + two that were built.
+    { "have": { "what": "hatchery", "op": "eq", "count": 3, "by_start_of": "spire" } },
+
+    // (4) have + supply range + constructed_only: was a hatchery — excluding
+    //     the free starting one — built at 11 or 12 supply? op defaults to
+    //     "gte" and count to 1, so this reads "at least one". supply_* bounds
+    //     are SIMULATION-ONLY (the command-stream reader has no supply).
+    { "have": { "what": "hatchery", "supply_min": 11, "supply_max": 12, "constructed_only": true } },
+
+    // (5) have + op "lte" + time window: at most one sunken colony in the
+    //     first five minutes. after/before bound the window as "m:ss".
+    { "have": { "what": "sunken_colony", "op": "lte", "count": 1, "after": "0:00", "before": "5:00" } },
+
+    // (6) have on the special `overlord`: an overlord morph was STARTED before
+    //     the pool. (This exact check is what separates overpool from 9 pool.)
+    { "have": { "what": "overlord", "op": "gte", "count": 1, "by_start_of": "spawning_pool" } }
+  ]
+}

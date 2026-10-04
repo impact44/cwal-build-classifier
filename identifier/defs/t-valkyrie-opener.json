@@ -1,0 +1,14 @@
+{
+  "id": "valkyrie-opener",
+  "name": "Valkyrie Opener",
+  "aka": ["valk opener", "valks", "starport valkyrie"],
+  "race": "T",
+  "vs": ["Z"],
+  "notes": "One-rax, one-factory transition into a Starport for early Valkyries in TvZ. The tech path (Barracks then Factory then Starport then Control Tower and Armory then Valkyrie) is already forced by the game's tech tree, so none of it is asserted here. What actually identifies the build are the counts: exactly one Barracks when the Factory starts, so this is not a bio build that added Valkyries later; exactly one Factory when the Starport starts, so it is not a mech opener; and the natural Command Center already down when the Factory starts, since one-base Valkyries is not a real build.",
+  "when": [
+    { "have": { "what": "valkyrie", "op": "gte", "count": 1 } },
+    { "have": { "what": "barracks", "op": "eq", "count": 1, "by_start_of": "factory" } },
+    { "have": { "what": "factory", "op": "eq", "count": 1, "by_start_of": "starport" } },
+    { "have": { "what": "command_center", "op": "eq", "count": 2, "by_start_of": "factory" } }
+  ]
+}

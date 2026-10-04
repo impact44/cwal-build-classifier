@@ -1,0 +1,38 @@
+{
+  "id": "9pool",
+  "name": "9 Pool",
+  "aka": [
+    "nine pool"
+  ],
+  "race": "Z",
+  "vs": [],
+  "notes": "Pool-first opening: the Spawning Pool is the very first building, at around 9 supply, with NO overlord started before the pool (that would be overpool). Aggressive. (Opening dimension, supply-based; sim only.)",
+  "when": [
+    {
+      "order": [
+        "hatchery",
+        "spawning_pool"
+      ],
+      "strict": true,
+      "include_start": true,
+      "ignore_supply_providers": true
+    },
+    {
+      "have": {
+        "what": "spawning_pool",
+        "op": "gte",
+        "count": 1,
+        "supply_min": 6,
+        "supply_max": 10
+      }
+    },
+    {
+      "have": {
+        "what": "overlord",
+        "op": "eq",
+        "count": 0,
+        "by_start_of": "spawning_pool"
+      }
+    }
+  ]
+}

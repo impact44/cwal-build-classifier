@@ -1,0 +1,12 @@
+{
+  "id": "3hatch-spire",
+  "name": "3 Hatch Spire",
+  "aka": ["3 hatch muta", "3 hatch mutalisk", "3h spire"],
+  "race": "Z",
+  "vs": [],
+  "notes": "Three or more hatcheries down before the Lair, then Spire: the economic three-base muta structure. Later Lair timing than 2 or 2.5 hatch spire because the third base comes first. Structure only, opening-agnostic.",
+  "when": [
+    { "order": ["lair", "spire"] },
+    { "have": { "what": "hatchery", "op": "gte", "count": 3, "by_start_of": "lair" } }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "8rax",
+  "name": "8 Rax",
+  "aka": ["8 barracks", "eight rax"],
+  "race": "T",
+  "vs": [],
+  "notes": "First building is a Barracks at 8 supply, and the second building is a Supply Depot. An aggressive early-rax opening. (Terran opening; order-strict plus supply.)",
+  "when": [
+    { "order": ["barracks", "supply_depot"], "strict": true },
+    { "have": { "what": "barracks", "op": "gte", "count": 1, "supply_min": 8, "supply_max": 8 } }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "2hatch-spire",
+  "name": "2 Hatch Spire",
+  "aka": ["2 hatch muta", "2 hatch mutalisk", "2h spire"],
+  "race": "Z",
+  "vs": [],
+  "notes": "Two-base tech to Spire: exactly two hatcheries (the starting hatch plus the natural) when the Spire starts. Structure only, opening-agnostic. The unit that follows is almost always Mutalisk.",
+  "when": [
+    { "have": { "what": "hatchery", "op": "eq", "count": 2, "by_start_of": "spire" } }
+  ]
+}

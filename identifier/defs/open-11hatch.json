@@ -1,0 +1,33 @@
+{
+  "id": "11hatch",
+  "name": "11 Hatch",
+  "aka": [
+    "eleven hatch"
+  ],
+  "race": "Z",
+  "vs": [],
+  "notes": "Hatch-first (overhatch) opening: the natural hatchery goes down before the pool, at 11 supply. Slightly earlier and less economic than 12 hatch. (Opening dimension, supply-based; sim only.) Requires that no earlier hatchery preceded it, so a player who expands twice before the pool is labelled by the first one.",
+  "when": [
+    {
+      "have": {
+        "what": "hatchery",
+        "op": "gte",
+        "count": 1,
+        "supply_min": 10,
+        "supply_max": 11,
+        "by_start_of": "spawning_pool",
+        "constructed_only": true
+      }
+    },
+    {
+      "have": {
+        "what": "hatchery",
+        "op": "eq",
+        "count": 0,
+        "supply_max": 9,
+        "by_start_of": "spawning_pool",
+        "constructed_only": true
+      }
+    }
+  ]
+}

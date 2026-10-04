@@ -1,0 +1,11 @@
+{
+  "id": "bbs",
+  "name": "BBS",
+  "aka": ["barracks barracks supply", "2 rax", "bbs rush"],
+  "race": "T",
+  "vs": [],
+  "notes": "Barracks, Barracks, Supply Depot as the exact first three buildings, in that order. The classic all-in 2-rax opening. (Terran opening; order-strict.)",
+  "when": [
+    { "order": ["barracks", "barracks", "supply_depot"], "strict": true }
+  ]
+}
