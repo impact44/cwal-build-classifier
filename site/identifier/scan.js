@@ -227,7 +227,12 @@ export const mountScan = (root, io) => {
 				),
 				el('span', { class: 'hit-meta' }, `${e.map} · ${fmtDur(e.frames)}`)
 			),
-			el('button', { type: 'button', onclick: () => io.inspect(url(e.file), e.file) }, 'Inspect')
+			el(
+				'span',
+				{ class: 'row' },
+				el('a', { class: 'btn', href: url(e.file), download: e.file, title: 'Download the replay to watch it in StarCraft' }, 'Download'),
+				el('button', { type: 'button', onclick: () => io.inspect(url(e.file), e.file) }, 'Inspect')
+			)
 		);
 	};
 

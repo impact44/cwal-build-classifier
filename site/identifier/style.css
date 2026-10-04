@@ -223,3 +223,9 @@ button.danger-solid { background: var(--bad); color: var(--panel); border-color:
 .hit-player { font-weight: 600; overflow-wrap: anywhere; }
 .hit-meta { font-size: 12px; color: var(--muted); }
 .sub-title { font-size: 13px; margin: 0 0 8px; }
+a.btn {
+	font-size: 13px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line);
+	color: var(--ink); text-decoration: none; background: var(--panel);
+}
+a.btn:hover { border-color: var(--muted); }
+.replay-name a.dl { font-size: 12px; font-weight: 400; margin-left: 8px; }

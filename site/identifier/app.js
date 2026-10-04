@@ -289,9 +289,9 @@ $('#copy-def').addEventListener('click', async (e) => {
 $('#only-race').addEventListener('change', () => renderReplays());
 
 // ---- replays -----------------------------------------------------------------
-const addReplay = (name, bytes) => {
+const addReplay = (name, bytes, url) => {
 	const id = nextId++;
-	replays.set(id, { name, pct: 0 });
+	replays.set(id, { name, pct: 0, url });
 	worker.postMessage({ type: 'sim', id, bytes }, [bytes]);
 	return id;
 };
@@ -308,7 +308,13 @@ const scan = mountScan($('#scan'), {
 	focus: () => defs[current] ?? null,
 	inspect: async (url, name) => {
 		const res = await fetch(url);
-		const id = addReplay(name, await res.arrayBuffer());
+		if (!res.ok) {
+			// The page's corpus list is older than the site (the corpus changed).
+			const id = nextId++;
+			replays.set(id, { name, error: `This replay is no longer in the corpus (HTTP ${res.status}). Reload the page to get the current corpus.` });
+			return renderReplays();
+		}
+		const id = addReplay(name, await res.arrayBuffer(), url);
 		renderReplays();
 		document.querySelector(`[data-replay="${id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	}
@@ -460,7 +466,12 @@ const renderReplays = () => {
 			const head = el(
 				'div',
 				{ class: 'replay-head' },
-				el('span', { class: 'replay-name' }, r.name),
+				el(
+					'span',
+					{ class: 'replay-name' },
+					r.name,
+					r.url && el('a', { class: 'dl', href: r.url, download: r.name, title: 'Download the replay to watch it in StarCraft' }, 'Download')
+				),
 				el(
 					'span',
 					{ class: 'replay-meta' },
