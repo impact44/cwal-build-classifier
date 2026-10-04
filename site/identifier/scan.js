@@ -252,7 +252,7 @@ export const mountScan = (root, io) => {
 					def.error
 						? def.error
 						: fast
-							? `Finds every player ${def.id ? `"${def.id}"` : 'this definition'} labels in ${index.length.toLocaleString()} ladder games (1v1, 5+ minutes). The games are simulated ahead of time, so this only matches.`
+							? `Finds every player ${def.id ? `"${def.id}"` : 'this definition'} labels in ${index.length.toLocaleString()} high-MMR ladder games (1v1, 5+ minutes). The games are simulated ahead of time, so this only matches.`
 							: `Finds every player ${def.id ? `"${def.id}"` : 'this definition'} labels. Each game's first 8 minutes are simulated once; searching again after an edit is instant for games already simulated.`
 				)
 			),

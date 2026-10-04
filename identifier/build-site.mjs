@@ -9,7 +9,7 @@
 //
 //   node identifier/build-site.mjs        then serve site/ (e.g. npx serve site)
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, rmSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -54,6 +54,8 @@ if (missing.length || stale.length)
 	throw new Error(
 		`identifier/corpus/index.json is out of date (${missing.length} unindexed, ${stale.length} missing); run node identifier/corpus/index.mjs`
 	);
+// Replace, don't merge: replays dropped from the corpus must not linger.
+rmSync(join(out, 'corpus', 'replays'), { recursive: true, force: true });
 cpSync(join(corpus, 'replays'), join(out, 'corpus', 'replays'), { recursive: true });
 copyFileSync(join(corpus, 'index.json'), join(out, 'corpus', 'index.json'));
 console.log(`copied ${present.length} corpus replays`);

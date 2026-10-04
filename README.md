@@ -9,7 +9,7 @@ the site with its next deploy.
 | [`identifier/defs/`](identifier/defs/) | **Build definitions**: the JSON rules that label a player's build from a replay ("12 hatch", "3 hatch spire"). Start with its [README](identifier/defs/README.md). |
 | [`identifier/crate/`](identifier/crate/) | The Rust matcher and extractor that evaluate those definitions. cwal.gg's backend uses this crate directly. |
 | [`identifier/wasm/`](identifier/wasm/) | The same crate compiled for the browser sandbox. |
-| [`identifier/corpus/`](identifier/corpus/) | 1,000 ladder replays (1v1, 5+ minutes) the sandbox can search with a definition, and their index. |
+| [`identifier/corpus/`](identifier/corpus/) | 1,000 high-MMR ladder replays (1v1, 5+ minutes, 2300-2700 MMR) the sandbox can search with a definition, and their index. |
 | [`guides/`](guides/) | **Build-order guides**: the articles and the components that render them. |
 | [`site/`](site/) | The GitHub Pages site: the [identifier sandbox](https://dxrsz.github.io/cwal-guides/identifier/) and the [guide previews](https://dxrsz.github.io/cwal-guides/guides/). |
 
