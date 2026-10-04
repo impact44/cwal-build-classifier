@@ -5,7 +5,9 @@
 import { mountBuilder } from './builder.js';
 import { mountScan } from './scan.js';
 
-const STORE = 'cwal-identifier-defs-v1';
+// Only edits and new definitions are stored, so unedited ones always show
+// the published version (v1 stored every definition and froze them).
+const STORE = 'cwal-identifier-defs-v2';
 const TAB_STORE = 'cwal-identifier-tab';
 const TEMPLATE = {
 	id: 'my-build',
@@ -41,7 +43,8 @@ let nextId = 1;
 
 const save = () => {
 	try {
-		localStorage.setItem(STORE, JSON.stringify({ defs, current }));
+		const edits = defs.filter(isModified);
+		localStorage.setItem(STORE, JSON.stringify({ edits, current: defs[current]?.file }));
 	} catch {
 		/* private mode etc: edits just won't persist */
 	}
@@ -55,14 +58,13 @@ const load = async () => {
 	} catch {
 		saved = null;
 	}
-	if (saved?.defs?.length) {
-		defs = saved.defs;
-		// Pick up definitions published since this browser last saved.
-		for (const s of shipped) if (!defs.some((d) => d.file === s.file)) defs.push({ ...s });
-		current = Math.min(saved.current ?? 0, defs.length - 1);
-	} else {
-		defs = shipped.map((s) => ({ ...s }));
+	defs = shipped.map((s) => ({ ...s }));
+	for (const e of saved?.edits ?? []) {
+		const i = defs.findIndex((d) => d.file === e.file);
+		if (i >= 0) defs[i].text = e.text;
+		else defs.push({ file: e.file, text: e.text });
 	}
+	current = Math.max(0, defs.findIndex((d) => d.file === saved?.current));
 	const want = new URLSearchParams(location.hash.slice(1)).get('def');
 	const i = defs.findIndex((d) => d.file === want);
 	if (i >= 0) current = i;
