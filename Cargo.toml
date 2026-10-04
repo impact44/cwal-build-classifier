@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["identifier/crate", "identifier/wasm"]
+members = ["crate", "wasm"]
 
 [profile.release]
 opt-level = "s"

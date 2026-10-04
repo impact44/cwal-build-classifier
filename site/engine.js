@@ -1,5 +1,5 @@
 // The replay engine: bwsim's wasm64 build (the same engine cwal.gg's replay
-// viewer uses) driving the identifier (identifier/wasm, the same Rust crate
+// viewer uses) driving the identifier (wasm/, the same Rust crate
 // cwal.gg runs). JavaScript only moves bytes between the two modules;
 // extraction and matching both happen in Rust, so what this reports is what
 // cwal.gg would label.

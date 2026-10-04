@@ -9,8 +9,8 @@ import { mountScan } from './scan.js';
 // the published version (v1 stored every definition and froze them).
 const STORE = 'cwal-identifier-defs-v2';
 const TAB_STORE = 'cwal-identifier-tab';
-const REPO = 'https://github.com/dxrsz/cwal-guides';
-const DEFS_PATH = 'identifier/defs';
+const REPO = 'https://github.com/dxrsz/cwal-build-classifier';
+const DEFS_PATH = 'defs';
 const TEMPLATE = {
 	id: 'my-build',
 	name: 'My Build',

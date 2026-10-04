@@ -1,5 +1,5 @@
 // Corpus search over precomputed timelines (corpus/timelines.json, built by
-// identifier/corpus/timelines.mjs). Only the identifier wasm is needed: no
+// corpus/timelines.mjs). Only the identifier wasm is needed: no
 // simulation happens here, so a search is just matching.
 //
 // In:  {type:'scan', seq, defs, start, end}   match one chunk of the corpus

@@ -1,6 +1,6 @@
 // Precompute every corpus replay's timeline (the first 8 minutes, extracted
 // exactly as the sandbox does) so a corpus search only has to match, not
-// simulate. Writes site/identifier/corpus/timelines.json: one ReplayBuild (or
+// simulate. Writes site/corpus/timelines.json: one ReplayBuild (or
 // null if it failed) per index.json entry, in order.
 //
 // Results are cached under target/ by a hash of the engine, the identifier
@@ -14,11 +14,11 @@ import { availableParallelism } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
-import { createEngine, gunzipMaybe } from '../../site/identifier/engine.js';
+import { createEngine, gunzipMaybe } from '../site/engine.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const root = join(here, '..', '..');
-const site = join(root, 'site', 'identifier');
+const root = join(here, '..');
+const site = join(root, 'site');
 const buf = (p) => {
 	const b = readFileSync(p);
 	return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);

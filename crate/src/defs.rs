@@ -1,4 +1,4 @@
-//! Build definitions (`identifier/defs/*.json`). See `identifier/defs/README.md`
+//! Build definitions (`defs/*.json`). See `defs/README.md`
 //! for the contributor-facing description of every field.
 
 use serde::Deserialize;

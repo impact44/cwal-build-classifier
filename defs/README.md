@@ -17,7 +17,7 @@ So a Zerg might come out as `3hatch-spire` **and** `12hatch`. Write each
 dimension as its own file; the matcher applies all of them and a player can win
 any number of labels.
 
-> **Try it live:** the [sandbox](https://dxrsz.github.io/cwal-guides/identifier/)
+> **Try it live:** the [sandbox](https://dxrsz.github.io/cwal-build-classifier/)
 > lets you edit a definition and test it against your own replays in the browser.
 >
 > **In a hurry?** [`EXAMPLE.jsonc`](./EXAMPLE.jsonc) is a single annotated build
@@ -252,7 +252,7 @@ started before the pool.
 3. Keep dimensions separate: an opening file and a structure file, never one
    file that bakes an opener into a tech path.
 4. Test it against real replays in the
-   [sandbox](https://dxrsz.github.io/cwal-guides/identifier/): paste your
+   [sandbox](https://dxrsz.github.io/cwal-build-classifier/): paste your
    definition, drop in replays of games that are (and aren't) this build, and
    check every condition's breakdown. It runs the same simulation and matcher
    as cwal.gg, so what it labels is what the site will label. "What the matcher

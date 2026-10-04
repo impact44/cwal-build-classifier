@@ -3,31 +3,83 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>cwal.gg Guides</title>
-	<meta name="description" content="Build-order guides and the build identifier behind cwal.gg." />
-	<style>
-		:root { --bg: #f6f6f4; --panel: #fff; --ink: #1d1d1b; --muted: #6b6b66; --line: #e2e1dc; --accent: #2f5fd0; }
-		@media (prefers-color-scheme: dark) {
-			:root { --bg: #141413; --panel: #1c1c1a; --ink: #ecebe6; --muted: #9b9a93; --line: #2e2d2a; --accent: #7fa2ff; }
-		}
-		body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, sans-serif; }
-		main { max-width: 720px; margin: 0 auto; padding: 40px 16px; }
-		h1 { margin: 0 0 6px; font-size: 24px; }
-		p { color: var(--muted); margin: 0 0 24px; }
-		a.card { display: block; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 12px; color: inherit; text-decoration: none; }
-		a.card:hover { border-color: var(--accent); }
-		a.card strong { color: var(--accent); }
-	</style>
+	<title>Build Identifier Sandbox</title>
+	<meta name="description" content="Write a cwal.gg build-order definition, drop in replays, and see exactly which conditions matched." />
+	<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-	<main>
-		<h1>cwal.gg guides</h1>
-		<p>
-			The open part of <a href="https://cwal.gg">cwal.gg</a>'s build orders. Contributions welcome on
-			<a href="https://github.com/dxrsz/cwal-guides">GitHub</a>.
-		</p>
-		<a class="card" href="guides/"><strong>Build-order guides</strong><br />Write a build-order guide and preview it exactly as cwal.gg renders it.</a>
-		<a class="card" href="identifier/"><strong>Build identifier sandbox</strong><br />Write a build definition and test it against your own replays.</a>
+	<header class="top">
+		<div>
+			<h1>Build identifier sandbox</h1>
+			<p class="lede">
+				Edit a build definition, drop in StarCraft: Remastered replays, and see which players it labels and
+				why. This runs the same simulation and matcher as <a href="https://cwal.gg">cwal.gg</a>, in your
+				browser; nothing is uploaded.
+				<a href="https://github.com/dxrsz/cwal-build-classifier/blob/main/defs/README.md">How definitions work</a>.
+			</p>
+		</div>
+	</header>
+
+	<main class="layout">
+		<section class="panel defs" aria-label="Definitions">
+			<div class="panel-head">
+				<h2>Definitions</h2>
+				<div class="row">
+					<button id="new-def" type="button">New</button>
+					<button id="reset-defs" type="button" class="quiet" title="Discard all local edits">Reset all</button>
+				</div>
+			</div>
+			<ul id="def-list" class="def-list"></ul>
+			<button id="propose" type="button" class="primary propose" disabled>Propose changes</button>
+		</section>
+
+		<dialog id="propose-dialog" class="propose-dialog">
+			<form method="dialog">
+				<h2>Propose your changes</h2>
+				<p class="help">
+					Each definition opens in GitHub's editor. GitHub forks the repo for you if needed, then asks for a
+					commit message and opens a pull request. You need a GitHub account.
+				</p>
+				<ul id="propose-list" class="propose-list"></ul>
+				<div class="row end"><button value="close">Close</button></div>
+			</form>
+		</dialog>
+
+		<section class="panel editor" aria-label="Editor">
+			<div class="panel-head">
+				<h2 id="editor-title">Definition</h2>
+				<div class="row">
+					<button id="copy-def" type="button">Copy JSON</button>
+					<button id="revert-def" type="button" class="quiet">Revert</button>
+					<button id="delete-def" type="button" class="quiet danger">Delete</button>
+				</div>
+			</div>
+			<div class="tabs" role="tablist">
+				<button type="button" role="tab" id="tab-form" aria-selected="true">Form</button>
+				<button type="button" role="tab" id="tab-json" aria-selected="false">JSON</button>
+			</div>
+			<div id="builder" class="builder"></div>
+			<textarea id="editor" spellcheck="false" autocomplete="off" autocapitalize="off" hidden></textarea>
+			<div id="def-status" class="def-status" aria-live="polite"></div>
+		</section>
+
+		<section class="panel results" aria-label="Replays">
+			<div class="panel-head">
+				<h2>Replays</h2>
+				<label class="row toggle"><input type="checkbox" id="only-race" checked /> Only players of this race</label>
+			</div>
+			<div id="scan" class="scan"></div>
+			<h3 class="sub-title">Your replays</h3>
+			<label id="drop" class="drop">
+				<input id="file" type="file" accept=".rep" multiple hidden />
+				<strong>Drop .rep files here</strong> or click to choose. The first 8 minutes are simulated once;
+				editing the definition re-matches instantly.
+			</label>
+			<div id="engine-status" class="engine-status"></div>
+			<div id="replays"></div>
+		</section>
 	</main>
+
+	<script type="module" src="app.js"></script>
 </body>
 </html>

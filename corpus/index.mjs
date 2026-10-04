@@ -1,4 +1,4 @@
-// Index the replay corpus: identifier/corpus/replays/*.rep -> index.json, one
+// Index the replay corpus: corpus/replays/*.rep -> index.json, one
 // entry per replay with its map, length and players (name + race, read from
 // the starting units so Random shows its real race).
 //
@@ -6,14 +6,14 @@
 // player of its race, or the wrong matchup) without simulating them.
 //
 // Uses the same engine as the sandbox, so run the site build first:
-//   node identifier/build-site.mjs && node identifier/corpus/index.mjs [dir] [out]
+//   node build-site.mjs && node corpus/index.mjs [dir] [out]
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createEngine, gunzipMaybe } from '../../site/identifier/engine.js';
+import { createEngine, gunzipMaybe } from '../site/engine.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const site = join(here, '..', '..', 'site', 'identifier');
+const site = join(here, '..', 'site');
 const dir = process.argv[2] ?? join(here, 'replays');
 const out = process.argv[3] ?? join(here, 'index.json');
 

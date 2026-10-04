@@ -5,7 +5,7 @@
 //!      unit table into a per-player timeline of construction/production
 //!      events (what, when, at what supply).
 //!   2. *Matching* ([`matcher`]) — test that timeline against declarative build
-//!      definitions ([`defs`], the JSON files in `identifier/defs/`). A build is
+//!      definitions ([`defs`], the JSON files in `defs/`). A build is
 //!      a *label*, not "the" build: one player in one replay can match several
 //!      (an opening and a tech path), so matching yields a set of labels.
 //!

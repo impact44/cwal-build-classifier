@@ -1,5 +1,5 @@
 // Corpus search: run the focused definition over every replay in the corpus
-// (identifier/corpus) and list the players it labels.
+// (corpus/) and list the players it labels.
 //
 // Normally the site build has already simulated the corpus
 // (corpus/timelines.json), so a search only matches: corpus-worker.js runs the

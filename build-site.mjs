@@ -1,21 +1,21 @@
-// Build the sandbox into site/identifier/:
+// Build the sandbox into site/:
 //   build_identifier.wasm  the identifier crate compiled for the browser
-//   defs.json              every identifier/defs/*.json, as [{file, text}]
+//   defs.json              every defs/*.json, as [{file, text}]
 //   engine/                bwsim's wasm + sim data pack, fetched from cwal.gg
 //
 // The engine is fetched rather than vendored: it is the exact build cwal.gg's
 // replay viewer serves, so the sandbox simulates replays the way the site does.
 // Set ENGINE_BASE to fetch it elsewhere, or SKIP_ENGINE=1 to keep what's there.
 //
-//   node identifier/build-site.mjs        then serve site/ (e.g. npx serve site)
+//   node build-site.mjs        then serve site/ (e.g. npx serve site)
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, cpSync, existsSync, rmSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const out = join(root, 'site', 'identifier');
+const root = dirname(fileURLToPath(import.meta.url));
+const out = join(root, 'site');
 const ENGINE_BASE = process.env.ENGINE_BASE ?? 'https://cwal.gg/viewer/';
 
 console.log('building identifier wasm…');
@@ -35,7 +35,7 @@ copyFileSync(
 	join(out, 'build_identifier.wasm')
 );
 
-const defsDir = join(root, 'identifier', 'defs');
+const defsDir = join(root, 'defs');
 const defs = readdirSync(defsDir)
 	.filter((f) => f.endsWith('.json'))
 	.sort()
@@ -45,14 +45,14 @@ console.log(`wrote ${defs.length} definitions`);
 
 // The replay corpus, served next to the page. The index must cover exactly
 // the replays present, or searches would skip or 404 on some.
-const corpus = join(root, 'identifier', 'corpus');
+const corpus = join(root, 'corpus');
 const indexed = JSON.parse(readFileSync(join(corpus, 'index.json'), 'utf8')).map((e) => e.file);
 const present = readdirSync(join(corpus, 'replays')).filter((f) => f.endsWith('.rep'));
 const missing = present.filter((f) => !indexed.includes(f));
 const stale = indexed.filter((f) => !present.includes(f));
 if (missing.length || stale.length)
 	throw new Error(
-		`identifier/corpus/index.json is out of date (${missing.length} unindexed, ${stale.length} missing); run node identifier/corpus/index.mjs`
+		`corpus/index.json is out of date (${missing.length} unindexed, ${stale.length} missing); run node corpus/index.mjs`
 	);
 // Replace, don't merge: replays dropped from the corpus must not linger.
 rmSync(join(out, 'corpus', 'replays'), { recursive: true, force: true });
@@ -72,4 +72,4 @@ for (const f of ['bwsim_wasm.wasm', 'sim.pack.gz']) {
 // Last, since it runs the engine fetched above.
 const { buildTimelines } = await import('./corpus/timelines.mjs');
 await buildTimelines();
-console.log('done: serve site/ and open /identifier/');
+console.log('done: serve site/');

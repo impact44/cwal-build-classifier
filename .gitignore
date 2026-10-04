@@ -1,9 +1,8 @@
 /target
-/site/identifier/engine/
-/site/identifier/build_identifier.wasm
-/site/identifier/defs.json
+/site/engine/
+/site/build_identifier.wasm
+/site/defs.json
+/site/corpus/
+/site/_test/
 node_modules/
 .DS_Store
-/site/identifier/_test/
-/site/guides/
-/site/identifier/corpus/
