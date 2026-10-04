@@ -41,7 +41,12 @@
 					<button id="delete-def" type="button" class="quiet danger">Delete</button>
 				</div>
 			</div>
-			<textarea id="editor" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+			<div class="tabs" role="tablist">
+				<button type="button" role="tab" id="tab-form" aria-selected="true">Form</button>
+				<button type="button" role="tab" id="tab-json" aria-selected="false">JSON</button>
+			</div>
+			<div id="builder" class="builder"></div>
+			<textarea id="editor" spellcheck="false" autocomplete="off" autocapitalize="off" hidden></textarea>
 			<div id="def-status" class="def-status" aria-live="polite"></div>
 		</section>
 

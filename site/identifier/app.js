@@ -2,7 +2,10 @@
 // and build_identifier.wasm (extraction + matching); this file edits
 // definitions and renders the reports those produce.
 
+import { mountBuilder } from './builder.js';
+
 const STORE = 'cwal-identifier-defs-v1';
+const TAB_STORE = 'cwal-identifier-tab';
 const TEMPLATE = {
 	id: 'my-build',
 	name: 'My Build',
@@ -64,6 +67,65 @@ const load = async () => {
 	if (i >= 0) current = i;
 };
 
+// ---- editor: form + JSON tabs ----------------------------------------------
+const syncRevert = () => {
+	const d = defs[current];
+	$('#revert-def').disabled = !shipped.some((x) => x.file === d.file) || !isModified(d);
+};
+
+const setText = (t) => {
+	defs[current].text = t;
+	$('#editor').value = t;
+	syncRevert();
+	save();
+	requestIdentify();
+};
+
+// Of the loaded players this definition's race applies to, how many satisfy
+// condition i (as of the last match).
+const conditionStats = (i) => {
+	const focus = focusId();
+	let pass = 0;
+	let total = 0;
+	for (const r of replays.values())
+		for (const p of r.players ?? []) {
+			const rep = p.reports.find((x) => x.id === focus);
+			if (!rep?.race.passed || !rep.conditions[i]) continue;
+			total++;
+			if (rep.conditions[i].passed) pass++;
+		}
+	return { pass, total };
+};
+
+const builder = mountBuilder($('#builder'), {
+	getText: () => defs[current].text,
+	setText,
+	stats: conditionStats,
+	showJson: () => showTab('json')
+});
+
+let tab = 'form';
+try {
+	tab = localStorage.getItem(TAB_STORE) === 'json' ? 'json' : 'form';
+} catch {
+	/* default */
+}
+const showTab = (t) => {
+	tab = t;
+	try {
+		localStorage.setItem(TAB_STORE, t);
+	} catch {
+		/* not persisted */
+	}
+	$('#tab-form').setAttribute('aria-selected', String(t === 'form'));
+	$('#tab-json').setAttribute('aria-selected', String(t === 'json'));
+	$('#builder').hidden = t !== 'form';
+	$('#editor').hidden = t !== 'json';
+	if (t === 'form') builder.render();
+};
+$('#tab-form').addEventListener('click', () => showTab('form'));
+$('#tab-json').addEventListener('click', () => showTab('json'));
+
 // ---- worker ----------------------------------------------------------------
 const worker = new Worker('./worker.js');
 let identifyTimer = 0;
@@ -101,6 +163,10 @@ worker.onmessage = (e) => {
 		renderReplays();
 		return;
 	}
+	if (m.type === 'slugs') {
+		builder.setSlugs(m.slugs);
+		return;
+	}
 	if (m.type === 'identified') {
 		$('#engine-status').textContent = '';
 		defStatus = Object.fromEntries((m.defs ?? []).map((d) => [d.file, d]));
@@ -111,6 +177,7 @@ worker.onmessage = (e) => {
 		renderDefList();
 		renderDefStatus();
 		renderReplays();
+		builder.refreshStats();
 	}
 };
 
@@ -160,7 +227,8 @@ const select = (i) => {
 	$('#editor').value = d.text;
 	$('#editor-title').textContent = d.file;
 	const shippedOne = shipped.some((x) => x.file === d.file);
-	$('#revert-def').disabled = !shippedOne || !isModified(d);
+	syncRevert();
+	if (tab === 'form') builder.render();
 	$('#delete-def').disabled = shippedOne;
 	history.replaceState(null, '', `#def=${encodeURIComponent(d.file)}`);
 	save();
@@ -176,9 +244,8 @@ const uniqueFile = (base) => {
 };
 
 $('#editor').addEventListener('input', (e) => {
-	const d = defs[current];
-	d.text = e.target.value;
-	$('#revert-def').disabled = !shipped.some((x) => x.file === d.file) || !isModified(d);
+	defs[current].text = e.target.value;
+	syncRevert();
 	save();
 	requestIdentify();
 });
@@ -338,7 +405,7 @@ const renderReport = (r) =>
 			el(
 				'div',
 				{ class: `cond ${c.passed ? 'ok' : 'bad'}` },
-				el('div', { class: 'cond-title' }, `when[${i}]`),
+				el('div', { class: 'cond-title' }, `Condition ${i + 1}`),
 				c.order && renderOrder(c.order),
 				c.have && renderHave(c.have)
 			)
@@ -426,5 +493,7 @@ const renderReplays = () => {
 };
 
 await load();
+showTab(tab);
 select(current);
 requestIdentify();
+worker.postMessage({ type: 'slugs' });
