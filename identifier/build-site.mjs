@@ -10,6 +10,7 @@
 //   node identifier/build-site.mjs        then serve site/ (e.g. npx serve site)
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -21,7 +22,13 @@ console.log('building identifier wasm…');
 execFileSync(
 	'cargo',
 	['build', '-p', 'build-identifier-wasm', '--release', '--target', 'wasm32-unknown-unknown'],
-	{ cwd: root, stdio: 'inherit' }
+	{
+		cwd: root,
+		stdio: 'inherit',
+		// Panic locations embed absolute source paths; keep the builder's home
+		// directory out of the published binary.
+		env: { ...process.env, RUSTFLAGS: `--remap-path-prefix=${homedir()}=~ ${process.env.RUSTFLAGS ?? ''}`.trim() }
+	}
 );
 copyFileSync(
 	join(root, 'target', 'wasm32-unknown-unknown', 'release', 'build_identifier_wasm.wasm'),
