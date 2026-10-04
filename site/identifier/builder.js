@@ -87,6 +87,15 @@ const unsupported = (d) => {
 
 // ---- plain-English summaries -------------------------------------------------
 const pretty = (slug) => (slug ? slug.replaceAll('_', ' ') : '?');
+const plural = (slug, n) => {
+	const p = pretty(slug);
+	if (n === 1 || !slug) return p;
+	if (/[^aeiou]y$/.test(p)) return p.slice(0, -1) + 'ies';
+	return /(s|x|ch|sh)$/.test(p) ? p + 'es' : p + 's';
+};
+// The halls every player starts with one of. Counts include that free one
+// unless constructed_only; orders skip it unless include_start.
+export const TOWN_HALLS = new Set(['hatchery', 'command_center', 'nexus']);
 const stepText = (s) =>
 	typeof s === 'string'
 		? pretty(s)
@@ -101,6 +110,9 @@ export const describe = (c) => {
 		let t = c.strict
 			? `The very first buildings are ${seq}, back to back`
 			: `${seq[0]?.toUpperCase() ?? ''}${seq.slice(1)} happen in this order (other things may come between)`;
+		const names = c.order.flatMap((s) => (typeof s === 'string' ? [s] : (s.one_of ?? s.unordered ?? [])));
+		const hall = names.find((n) => TOWN_HALLS.has(n));
+		if (hall && !c.include_start) t += `. Each ${pretty(hall)} here is one they built; the one they start with isn't part of the order`;
 		const extras = [];
 		if (c.include_start) extras.push('counting the starting town hall');
 		if (c.ignore_supply_providers) extras.push('ignoring supply depots, pylons and overlords');
@@ -109,8 +121,10 @@ export const describe = (c) => {
 	}
 	if (c.have) {
 		const h = c.have;
-		let t = `${OP_WORD[h.op ?? 'gte']} ${h.count ?? 1} ${pretty(h.what)}`;
-		if (h.constructed_only) t += ' (built, not the starting one)';
+		let t = `${OP_WORD[h.op ?? 'gte']} ${h.count ?? 1} ${plural(h.what, h.count ?? 1)}`;
+		if (TOWN_HALLS.has(h.what))
+			t += h.constructed_only ? ' they built (the one they start with is not counted)' : ' including the one they start with';
+		else if (h.constructed_only) t += ' they built';
 		if (Number.isFinite(h.supply_min) && Number.isFinite(h.supply_max))
 			t += h.supply_min === h.supply_max ? ` started at ${h.supply_min} supply` : ` started at ${h.supply_min}-${h.supply_max} supply`;
 		else if (Number.isFinite(h.supply_min)) t += ` started at ${h.supply_min}+ supply`;
@@ -270,7 +284,7 @@ export const mountBuilder = (root, io) => {
 				'div',
 				{ class: 'checks' },
 				check('Strict', c.strict, (v) => { c.strict = v; commit(); refresh(); }, 'the first buildings, back to back, nothing between'),
-				check('Count the starting town hall', c.include_start, (v) => { c.include_start = v; commit(); refresh(); }, 'the free Hatchery / CC / Nexus becomes step one'),
+				check('Include the starting town hall', c.include_start, (v) => { c.include_start = v; commit(); refresh(); }, 'Off: "hatchery" means one they built. On: the Hatchery / CC / Nexus they start with is step one.'),
 				check('Ignore supply buildings', c.ignore_supply_providers, (v) => { c.ignore_supply_providers = v; commit(); refresh(); }, 'drop depots, pylons and overlords first')
 			)
 		);
@@ -279,6 +293,15 @@ export const mountBuilder = (root, io) => {
 	const haveSection = (c, refresh) => {
 		const h = c.have;
 		const set = (k, v) => { if (v === undefined || v === '' || Number.isNaN(v)) delete h[k]; else h[k] = v; commit(); refresh(); };
+		// Only a town hall has a free starting one, so the option only shows there.
+		const builtCheck = check(
+			'Don\'t count the starting town hall',
+			h.constructed_only,
+			(v) => set('constructed_only', v || undefined),
+			'Without this, "2 hatcheries" means the main plus one built. With it, only built ones count.'
+		);
+		const syncBuilt = () => (builtCheck.hidden = !TOWN_HALLS.has(h.what) && !h.constructed_only);
+		syncBuilt();
 		return el(
 			'div',
 			{ class: 'sub' },
@@ -290,7 +313,7 @@ export const mountBuilder = (root, io) => {
 				el('select', { onchange: (e) => set('op', e.target.value) },
 					...Object.entries(OP_WORD).map(([k, w]) => el('option', { value: k, selected: (h.op ?? 'gte') === k }, w))),
 				el('input', { type: 'number', min: 0, class: 'count', value: h.count ?? 1, oninput: (e) => set('count', num(e.target.value) ?? 0) }),
-				slugInput(h.what ?? '', (v) => set('what', v), 'what to count')
+				slugInput(h.what ?? '', (v) => { set('what', v); syncBuilt(); }, 'what to count')
 			),
 			el(
 				'div',
@@ -301,7 +324,7 @@ export const mountBuilder = (root, io) => {
 				field('Supply from', el('input', { type: 'number', min: 0, value: h.supply_min ?? '', oninput: (e) => set('supply_min', num(e.target.value)) })),
 				field('Supply to', el('input', { type: 'number', min: 0, value: h.supply_max ?? '', oninput: (e) => set('supply_max', num(e.target.value)) }))
 			),
-			check('Built only', h.constructed_only, (v) => set('constructed_only', v || undefined), 'leave out the free starting town hall')
+			builtCheck
 		);
 	};
 

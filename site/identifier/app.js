@@ -370,7 +370,9 @@ const renderHave = (h) =>
 				'have ',
 				el('code', {}, h.what),
 				h.filters.length ? ` (${h.filters.join(', ')})` : '',
-				`: found ${h.actual}, needs ${OPS[h.op]} ${h.expected}`
+				`: found ${h.actual}`,
+				h.candidates.some((c) => c.counted && !c.constructed) ? ' (including the starting one)' : '',
+				`, needs ${OPS[h.op]} ${h.expected}`
 			)
 		),
 		h.detail && el('div', { class: 'detail' }, h.detail),

@@ -196,9 +196,12 @@ details.timeline summary { cursor: pointer; color: var(--muted); font-size: 12px
 .icon-btn.danger:hover { color: var(--bad); border-color: var(--bad); }
 button.add { align-self: flex-start; color: var(--accent); border-style: dashed; }
 .checks { display: flex; flex-direction: column; gap: 2px; }
-.check-field { display: flex; gap: 6px; align-items: baseline; font-size: 13px; }
+.check-field { display: grid; grid-template-columns: auto 1fr; column-gap: 6px; align-items: baseline; font-size: 13px; }
+.check-field .help { grid-column: 2; }
 .have-main { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .have-main .count { width: 64px; }
 .have-main input.slug { flex: 1; min-width: 140px; }
 .builder input.time { font-family: var(--mono); }
 .builder .msg { padding: 8px; border-radius: 6px; }
+
+[hidden] { display: none !important; }
