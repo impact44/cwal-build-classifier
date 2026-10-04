@@ -9,6 +9,8 @@ import { mountScan } from './scan.js';
 // the published version (v1 stored every definition and froze them).
 const STORE = 'cwal-identifier-defs-v2';
 const TAB_STORE = 'cwal-identifier-tab';
+const REPO = 'https://github.com/dxrsz/cwal-guides';
+const DEFS_PATH = 'identifier/defs';
 const TEMPLATE = {
 	id: 'my-build',
 	name: 'My Build',
@@ -191,7 +193,63 @@ const isModified = (d) => {
 	return s ? s.text !== d.text : true;
 };
 
+// ---- propose changes ----------------------------------------------------------
+// A static page can't open a pull request itself without a GitHub login, so
+// each definition goes through GitHub's own editor, which handles the fork,
+// the commit and the pull request. New files can be prefilled by URL; GitHub
+// has no way to prefill an edit to an existing file, so the JSON is copied for
+// pasting instead.
+const pending = () => defs.filter(isModified);
+
+const renderPropose = () => {
+	const n = pending().length;
+	const b = $('#propose');
+	b.disabled = n === 0;
+	b.textContent = n ? `Propose changes (${n})` : 'Propose changes';
+	b.title = n ? '' : 'Edit or add a definition first';
+};
+
+const proposeRow = (d) => {
+	const st = defStatus[d.file];
+	const isNew = !shipped.some((x) => x.file === d.file);
+	const blocked = st?.error ? `Fix first: ${st.error}` : st?.problems?.length ? `Fix first: ${st.problems[0]}` : null;
+	const label = d.file.replace(/\.json$/, '');
+	let action;
+	if (blocked) {
+		action = el('span', { class: 'msg err' }, blocked);
+	} else if (isNew) {
+		const url = `${REPO}/new/main/${DEFS_PATH}?filename=${encodeURIComponent(d.file)}&value=${encodeURIComponent(d.text)}`;
+		action = el('a', { class: 'btn primary-link', href: url, target: '_blank', rel: 'noopener' }, 'Open pull request ↗');
+	} else {
+		action = el(
+			'button',
+			{
+				type: 'button',
+				onclick: async (e) => {
+					await navigator.clipboard.writeText(d.text);
+					window.open(`${REPO}/edit/main/${DEFS_PATH}/${encodeURIComponent(d.file)}`, '_blank', 'noopener');
+					e.target.textContent = 'Copied: paste over the file in GitHub ↗';
+				}
+			},
+			'Copy JSON & open editor ↗'
+		);
+	}
+	return el(
+		'li',
+		{},
+		el('div', {}, el('strong', {}, label), el('span', { class: 'tag' }, isNew ? ' new' : ' edited')),
+		action,
+		!blocked && !isNew && el('div', { class: 'help' }, 'Select all in the GitHub editor and paste; your JSON is on the clipboard.')
+	);
+};
+
+$('#propose').addEventListener('click', () => {
+	$('#propose-list').replaceChildren(...pending().map(proposeRow));
+	$('#propose-dialog').showModal();
+});
+
 const renderDefList = () => {
+	renderPropose();
 	const ul = $('#def-list');
 	ul.replaceChildren(
 		...defs.map((d, i) => {

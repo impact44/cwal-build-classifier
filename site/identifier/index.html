@@ -30,7 +30,20 @@
 				</div>
 			</div>
 			<ul id="def-list" class="def-list"></ul>
+			<button id="propose" type="button" class="primary propose" disabled>Propose changes</button>
 		</section>
+
+		<dialog id="propose-dialog" class="propose-dialog">
+			<form method="dialog">
+				<h2>Propose your changes</h2>
+				<p class="help">
+					Each definition opens in GitHub's editor. GitHub forks the repo for you if needed, then asks for a
+					commit message and opens a pull request. You need a GitHub account.
+				</p>
+				<ul id="propose-list" class="propose-list"></ul>
+				<div class="row end"><button value="close">Close</button></div>
+			</form>
+		</dialog>
 
 		<section class="panel editor" aria-label="Editor">
 			<div class="panel-head">
