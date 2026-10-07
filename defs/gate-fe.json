@@ -1,0 +1,34 @@
+{
+  "id": "gate-fe",
+  "name": "Gate FE",
+  "aka": [],
+  "race": "P",
+  "vs": [
+    "Z"
+  ],
+  "notes": "Gate FE vs Zerg. Conditions required is only 1 Gate before 4:00 (to exclude any 2 Gate games) and no Gas before 2:30 (to exclude any 1 base games). These together should ensure that the definition only covers fast expand games that start with Pylon -> Gateway. ",
+  "when": [
+    {
+      "order": [
+        "pylon",
+        "gateway"
+      ],
+      "strict": true,
+      "have": {
+        "what": "gateway",
+        "op": "eq",
+        "count": 1,
+        "after": "00:00",
+        "before": "04:00"
+      }
+    },
+    {
+      "have": {
+        "what": "assimilator",
+        "op": "eq",
+        "count": 0,
+        "before": "2:30"
+      }
+    }
+  ]
+}
