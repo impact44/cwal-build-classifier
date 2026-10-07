@@ -1,0 +1,28 @@
+{
+  "id": "forge-fast-expand",
+  "name": "FFE",
+  "aka": [],
+  "race": "P",
+  "vs": [
+    "Z"
+  ],
+  "notes": "Forge Fast Expand opener against Zerg. These are the very simple initial conditions for distinguishing between forge fast expand and any of the other openings. Could be expanded upon to consider different follow-ups from both players.",
+  "when": [
+    {
+      "order": [
+        "pylon",
+        "forge"
+      ],
+      "strict": true
+    },
+    {
+      "have": {
+        "what": "nexus",
+        "op": "gte",
+        "count": 1,
+        "before": "3:30",
+        "constructed_only": true
+      }
+    }
+  ]
+}
