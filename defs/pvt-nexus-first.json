@@ -1,0 +1,19 @@
+{
+  "id": "pvt-nexus-first",
+  "name": "12 Nexus",
+  "aka": [],
+  "race": "P",
+  "vs": [
+    "T"
+  ],
+  "notes": "12 Nexus build vs Terran. A very simple categorization of 12 Nexus opening, without differentiating between any of its variations.",
+  "when": [
+    {
+      "order": [
+        "pylon",
+        "nexus"
+      ],
+      "strict": true
+    }
+  ]
+}
